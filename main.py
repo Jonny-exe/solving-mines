@@ -10,39 +10,68 @@ class MinesGame:
         MINES_RATIO = 0.12
         self.MINES_AMOUNT = int(round((MINES_RATIO * (self.WIDTH * self.HEIGHT)), 0))
         print(f"MINES: {self.MINES_AMOUNT}")
-        self.board = []
         self.mines_location = self.get_mines_location()
         print(f"MINES LOCATION: {self.mines_location}")
         self.create_board()
         self.print_board()
+        self.start_game()
     
     def start_game(self):
         over = False
         while not over:
             over = self.ask_for_input()
         
-        self.check_if_correct()
+        won = not self.check_if_correct()
+        if won:
+            print("You won")
+        else:
+            print("You lost")
+
+
         
     def check_if_correct(self):
         # Check if the result is correct
-        
-        return
+        wrong = False
+        mine_count = 0
+        for mine_location in self.mines_location:
+            mine_location = {
+                "row": math.floor(mine_location / self.WIDTH) - 1,
+                "column": (mine_location % self.HEIGHT) - 1
+            }
+
+            if self.game_board[mine_location["row"]][mine_location["column"]] != "M":
+                wrong = True
+                break
+            else:
+                mine_count += 1
+
+        print(f"MINE_COUNT: {mine_count}")
+        return wrong
 
 
         
 
     
-    def print_board(self):
+    def print_board(self, game=True):
+        if game:
+            board = self.game_board
+        else:
+            board = self.board
         for row in range(self.WIDTH):
-            print(self.board[row])
+            print(board[row])
 
 
     def create_board(self):
+        self.board = []
+        self.game_board = []
         # Fill with 0
         for column in range(self.WIDTH):
             self.board.append([])
+            self.game_board.append([])
             for _row in range(self.HEIGHT):
                 self.board[column].append(0)
+                self.game_board[column].append("")
+
 
         # Put in all +1 the ones that touch the mines
         for mine_location in self.mines_location:
@@ -62,11 +91,11 @@ class MinesGame:
                 row[mine_location["column"]] += 1
 
                 # RIGHT
-                if mine_location["column"] + 1 < len(row):
+                if mine_location["column"] + 1 < self.WIDTH:
                     row[mine_location["column"] + 1] += 1
 
                 # LEFT
-                if mine_location["column"] <= len(row) and mine_location["column"] > 0:
+                if mine_location["column"] <= self.WIDTH - 1 and mine_location["column"] > 0:
                     row[mine_location["column"] - 1] += 1
             
             # MIDDLE 
@@ -88,11 +117,11 @@ class MinesGame:
                 row[mine_location["column"]] += 1
 
                 # RIGHT
-                if mine_location["column"] + 1 < len(row):
+                if mine_location["column"] < self.WIDTH - 1:
                     row[mine_location["column"] + 1] += 1
 
                 # LEFT
-                if mine_location["column"] <= len(row) and mine_location["column"] > 0:
+                if mine_location["column"] > 0:
                     row[mine_location["column"] - 1] += 1
 
             # Write all the mines
@@ -102,16 +131,35 @@ class MinesGame:
                     "column": (mine_location % self.HEIGHT) - 1
                 }
                 self.board[mine_location["row"]][mine_location["column"]] = -1
+            
                 
-
+        for row in range(len(self.board)):
+            for column in range(len(self.board[row])):
+                if self.board[row][column] == 0:
+                    self.game_board[row][column] = 0
+        self.print_board(False)
+        
 
 
     def ask_for_input(self) -> bool:
-        column = int(input("COLUMN: "))
-        row = int(input("ROW: "))
-        finished = bool(input("HAVE YOU FINISHED: "))
+        row = int(input("ROW: ")) - 1
+        column = int(input("COLUMN: ")) - 1
+        flag = input("FLAG: ")
+        finished = input("HAVE YOU FINISHED: ")
+        if finished == "True":
+            finished = True
+        else:
+            finished = False
 
-        self.board[column][row] = "M"
+
+
+        print(f"FINISHED: {finished}")
+        print(f"GUESSED: {self.board[row][column]}")
+        if flag == "True":
+            self.game_board[row][column] = "M"
+        else:
+            self.game_board[row][column] = self.board[row][column]
+        self.print_board()
         return finished
 
         
