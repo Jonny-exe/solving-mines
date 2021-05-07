@@ -4,7 +4,7 @@ import array
 
 
 class MinesGame:
-    def __init__(self, height, width):
+    def __init__(self, height, width, human=False):
         self.HEIGHT = height
         self.WIDTH = width
         MINES_RATIO = 0.12
@@ -14,18 +14,33 @@ class MinesGame:
         print(f"MINES LOCATION: {self.mines_location}")
         self.create_board()
         self.print_board()
-        self.start_game()
+        if human:
+            self.start_game()
     
     def start_game(self):
         over = False
         while not over:
             over = self.ask_for_input()
-        
+
         won = not self.check_if_correct()
         if won:
             print("You won")
         else:
             print("You lost")
+    
+    def enter_input(self, row, column, flag) -> bool:
+        if flag:
+            if not self.board[row][column] == -1:
+                return False
+            self.game_board[row][column] = "M"
+        else:
+            if self.board[row][column] == -1:
+                return False
+            self.game_board[row][column] = self.board[row][column]
+
+        # self.print_board()
+        return True
+
 
 
         
