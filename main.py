@@ -9,12 +9,13 @@ class MinesGame:
         self.WIDTH = width
         MINES_RATIO = 0.12
         self.MINES_AMOUNT = int(round((MINES_RATIO * (self.WIDTH * self.HEIGHT)), 0))
-        print(f"MINES: {self.MINES_AMOUNT}")
         self.mines_location = self.get_mines_location()
-        print(f"MINES LOCATION: {self.mines_location}")
         self.create_board()
-        self.print_board()
+        self.render = False
         if human:
+            print(f"MINES: {self.MINES_AMOUNT}")
+            print(f"MINES LOCATION: {self.mines_location}")
+            self.print_board()
             self.start_game()
     
     def start_game(self):
@@ -28,18 +29,38 @@ class MinesGame:
         else:
             print("You lost")
     
-    def enter_input(self, row, column, flag) -> bool:
+    def render_games(self):
+        self.render = True
+
+    def get_game_board(self) -> list:
+        self.print_board()
+        return self.game_board
+    
+    def enter_input(self, row, column, flag) -> (list, bool, int):
+        over = False
+        reward = 1
         if flag:
             if not self.board[row][column] == -1:
-                return False
-            self.game_board[row][column] = "M"
+                over = True
+                reward = 0
+            else:
+                self.game_board[row][column] = -3
         else:
-            if self.board[row][column] == -1:
-                return False
-            self.game_board[row][column] = self.board[row][column]
+            if self.board[row][column] == -1 or self.board[row][column] == 0 or self.game_board[row][column] != -2:
+                over = True
+                reward = 0
+            else:
+                self.game_board[row][column] = self.board[row][column]
 
-        # self.print_board()
-        return True
+        self.locations_free -= 1
+        if self.locations_free <= 0:
+            over = True
+        
+        if self.render:
+            self.print_board()
+
+
+        return self.game_board, over, reward
 
 
 
@@ -54,7 +75,7 @@ class MinesGame:
                 "column": (mine_location % self.HEIGHT) - 1
             }
 
-            if self.game_board[mine_location["row"]][mine_location["column"]] != "M":
+            if self.game_board[mine_location["row"]][mine_location["column"]] != -3:
                 wrong = True
                 break
             else:
@@ -85,7 +106,8 @@ class MinesGame:
             self.game_board.append([])
             for _row in range(self.HEIGHT):
                 self.board[column].append(0)
-                self.game_board[column].append("")
+                # -2 is equal to not seen
+                self.game_board[column].append(-2)
 
 
         # Put in all +1 the ones that touch the mines
@@ -148,11 +170,15 @@ class MinesGame:
                 self.board[mine_location["row"]][mine_location["column"]] = -1
             
                 
+        self.locations_free = 0
         for row in range(len(self.board)):
             for column in range(len(self.board[row])):
                 if self.board[row][column] == 0:
                     self.game_board[row][column] = 0
-        self.print_board(False)
+                    self.locations_free += 1
+        
+        self.locations_free = (self.HEIGHT * self.WIDTH) - self.locations_free
+        # self.print_board(False)
         
 
 
@@ -171,7 +197,8 @@ class MinesGame:
         print(f"FINISHED: {finished}")
         print(f"GUESSED: {self.board[row][column]}")
         if flag == "True":
-            self.game_board[row][column] = "M"
+            # M is equal to -3
+            self.game_board[row][column] = -3
         else:
             self.game_board[row][column] = self.board[row][column]
         self.print_board()
