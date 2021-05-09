@@ -1,3 +1,4 @@
 tflearn
 tensorflow
 numpy
+beautifultable
