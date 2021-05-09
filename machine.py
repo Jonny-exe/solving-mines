@@ -1,4 +1,7 @@
 import random
+from datetime import datetime
+import sys
+import math
 import tflearn
 from tflearn.layers.core import input_data, dropout, fully_connected
 from tflearn.layers.estimator import regression
@@ -10,8 +13,10 @@ LR = 1e-3
 HEIGHT = 8
 WIDTH = 8
 GOAL_STEPS = 500
-INITIAL_GAMES = 20000
-SCORE_REQUIREMENTS = 4
+INITIAL_GAMES = 100000
+SCORE_REQUIREMENTS = 5
+EPOCHS = 15
+# 10 > 3
 
 
 def initial_population():
@@ -23,14 +28,10 @@ def initial_population():
         score = 0
         game_memory = []
         for _ in range(GOAL_STEPS):
-            action = [
-                random.randrange(0, WIDTH),
-                random.randrange(0, HEIGHT),
-                random.randrange(0, 2),
-            ]
-            observation, done, reward = game.enter_input(
-                action[0], action[1], action[2]
-            )
+            action = [0 for _ in range(WIDTH*HEIGHT)]
+            action[random.randrange(0, WIDTH*HEIGHT)] = 1
+            action = np.array(action)
+            observation, done, reward = game.enter_input(action)
 
             game_memory.append([observation, action])
 
@@ -46,7 +47,8 @@ def initial_population():
         scores.append(score)
     training_data_save = np.array(training_data)
     # np.save("training_data/saved.npy", training_data_save)
-    print("Average accpedted score: ", mean(accepted_scores))
+    print("Average accepted score: ", mean(accepted_scores))
+    print("Accepted scores: ", len(accepted_scores))
     return training_data
 
 
@@ -62,6 +64,12 @@ def neuronal_network_model(input_size):
     network = fully_connected(network, 512, activation="relu")
     network = dropout(network, 0.8)
 
+    network = fully_connected(network, 1024, activation="relu")
+    network = dropout(network, 0.8)
+
+    network = fully_connected(network, 512, activation="relu")
+    network = dropout(network, 0.8)
+
     network = fully_connected(network, 256, activation="relu")
     network = dropout(network, 0.8)
 
@@ -69,7 +77,7 @@ def neuronal_network_model(input_size):
     network = dropout(network, 0.8)
 
     # 2 Is probably wrong.
-    network = fully_connected(network, 3, activation="softmax")
+    network = fully_connected(network, WIDTH*HEIGHT, activation="softmax")
     network = regression(
         network,
         optimizer="adam",
@@ -86,9 +94,7 @@ def train_model(training_data, model=False):
     x = np.array([i[0] for i in training_data]).reshape(
         (-1, len(training_data[0][0]), HEIGHT)
     )
-    # x = np.array(training_data).reshape(-1, len(training_data[0][0], 1))
     y = [i[1] for i in training_data]
-    print()
     if not model:
         model = neuronal_network_model(input_size=len(x[0]))
 
@@ -97,7 +103,7 @@ def train_model(training_data, model=False):
     model.fit(
         {"input": x},
         {"targets": y},
-        n_epoch=3,
+        n_epoch=EPOCHS,
         snapshot_step=500,
         show_metric=True,
         run_id="openaistuff",
@@ -106,13 +112,19 @@ def train_model(training_data, model=False):
     return model
 
 
-training_data = initial_population()
-model = train_model(training_data)
+if len(sys.argv) > 1:
+    new_model = neuronal_network_model(WIDTH)
+    new_model.load(f"models/{sys.argv[1]}")
+    model = new_model
+    print(type(model))
+else:
+    training_data = initial_population()
+    model = train_model(training_data)
 
 
 scores = []
 choices = []
-for each_game in range(1):
+for each_game in range(10):
     score = 0
     game_memory = []
     game = main.MinesGame(8, 8)
@@ -120,25 +132,29 @@ for each_game in range(1):
 
     for _ in range(GOAL_STEPS):
         game.render_games()
-        x = np.array(observations).reshape(
-            (-1, len(training_data[0][0]), HEIGHT)
-        )
+        x = np.array(observations).reshape((-1, WIDTH, HEIGHT))
         action = model.predict(
             # np.array(observations).reshape(-1, len(observations[0]), HEIGHT)
             x
         )[0]
-        action = [round(number) for number in action]
-        print("ACTION: ", action)
+        mine_location = {
+            "row": math.floor(np.argmax(action) / WIDTH),
+            "column": np.argmax(action) % HEIGHT
+        }
+        print("ACTION: ", mine_location)
+
         choices.append(action)
 
-        observation, done, reward = game.enter_input(action[0], action[1], action[2])
-        game_memory.append([observation, action])
+        observations, done, reward = game.enter_input(action)
+        game_memory.append([observations, action])
         score += reward
         if done:
             break
+
+    print("-------------------------------------------------------------------")
     scores.append(score)
 
 average = sum(scores) / len(scores)
 print("Average score: ", average)
 
-model.save(f"models/A-{average}.model")
+model.save(f"models/A-{average}-{datetime.now()}.model")

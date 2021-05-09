@@ -1,6 +1,8 @@
 import random
 import math
 import array
+from beautifultable import BeautifulTable
+import numpy as np
 
 
 class MinesGame:
@@ -17,7 +19,7 @@ class MinesGame:
             print(f"MINES LOCATION: {self.mines_location}")
             self.print_board()
             self.start_game()
-    
+
     def start_game(self):
         over = False
         while not over:
@@ -28,34 +30,32 @@ class MinesGame:
             print("You won")
         else:
             print("You lost")
-    
+
     def render_games(self):
         self.render = True
 
     def get_game_board(self) -> list:
         self.print_board()
         return self.game_board
-    
-    def enter_input(self, row, column, flag) -> (list, bool, int):
+
+    def enter_input(self, mine_location) -> (list, bool, int):
+        mine_location = np.argmax(mine_location)
+        row = math.floor(mine_location / self.WIDTH)
+        column = (mine_location % self.HEIGHT)
         over = False
         reward = 1
-        if flag:
-            if not self.board[row][column] == -1:
-                over = True
-                reward = 0
-            else:
-                self.game_board[row][column] = -3
-        else:
-            if self.board[row][column] == -1 or self.board[row][column] == 0 or self.game_board[row][column] != -2:
-                over = True
-                reward = 0
-            else:
+        if (self.board[row][column] == -1) or (self.game_board[row][column] == 0) or (self.game_board[row][column] != -2):
+            if self.board[row][column] == -1:
                 self.game_board[row][column] = self.board[row][column]
+            over = True
+            reward = 0
+        else:
+            self.game_board[row][column] = self.board[row][column]
 
         self.locations_free -= 1
         if self.locations_free <= 0:
             over = True
-        
+
         if self.render:
             self.print_board()
 
@@ -64,7 +64,6 @@ class MinesGame:
 
 
 
-        
     def check_if_correct(self):
         # Check if the result is correct
         wrong = False
@@ -85,16 +84,20 @@ class MinesGame:
         return wrong
 
 
-        
 
-    
     def print_board(self, game=True):
         if game:
             board = self.game_board
         else:
             board = self.board
-        for row in range(self.WIDTH):
-            print(board[row])
+        index = 0
+        table = BeautifulTable()
+        for row in board:
+            # print(index, board[row])
+            table.append_row(row)
+            index += 1
+
+        print(table)
 
 
     def create_board(self):
@@ -134,17 +137,17 @@ class MinesGame:
                 # LEFT
                 if mine_location["column"] <= self.WIDTH - 1 and mine_location["column"] > 0:
                     row[mine_location["column"] - 1] += 1
-            
+
             # MIDDLE 
 
             row = self.board[mine_location["row"]]
 
             if mine_location["column"] > 0:
                 row[mine_location["column"] - 1] += 1
-            
+
             if mine_location["column"] < self.WIDTH - 1:
                 row[mine_location["column"] + 1] += 1
-            
+
             # BOTTOM
 
             if mine_location["row"] < self.HEIGHT - 1:
@@ -168,18 +171,17 @@ class MinesGame:
                     "column": (mine_location % self.HEIGHT) - 1
                 }
                 self.board[mine_location["row"]][mine_location["column"]] = -1
-            
-                
+
         self.locations_free = 0
         for row in range(len(self.board)):
             for column in range(len(self.board[row])):
                 if self.board[row][column] == 0:
                     self.game_board[row][column] = 0
                     self.locations_free += 1
-        
+
         self.locations_free = (self.HEIGHT * self.WIDTH) - self.locations_free
         # self.print_board(False)
-        
+
 
 
     def ask_for_input(self) -> bool:
@@ -204,7 +206,6 @@ class MinesGame:
         self.print_board()
         return finished
 
-        
 
     def get_mines_location(self) -> list:
         ocupied_numbers = {}
@@ -220,4 +221,3 @@ class MinesGame:
         return sorted_numbers
 
 
-game = MinesGame(8, 8)
