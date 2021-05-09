@@ -34,10 +34,6 @@ class MinesGame:
     def render_games(self):
         self.render = True
 
-    def get_game_board(self) -> list:
-        self.print_board()
-        return self.game_board
-
     def enter_input(self, mine_location) -> (list, bool, int):
         mine_location = np.argmax(mine_location)
         row = math.floor(mine_location / self.WIDTH)
@@ -180,7 +176,6 @@ class MinesGame:
                     self.locations_free += 1
 
         self.locations_free = (self.HEIGHT * self.WIDTH) - self.locations_free
-        # self.print_board(False)
 
 
 

@@ -1,5 +1,6 @@
 import random
 from datetime import datetime
+from bot import Bot
 import sys
 import math
 import tflearn
@@ -13,10 +14,10 @@ LR = 1e-3
 HEIGHT = 8
 WIDTH = 8
 GOAL_STEPS = 500
-INITIAL_GAMES = 100000
-SCORE_REQUIREMENTS = 5
-EPOCHS = 15
-# 10 > 3
+INITIAL_GAMES = 20000
+SCORE_REQUIREMENTS = 0
+EPOCHS = 5
+#10 > 3
 
 
 def initial_population():
@@ -25,12 +26,16 @@ def initial_population():
     accepted_scores = []
     for _ in range(INITIAL_GAMES):
         game = main.MinesGame(WIDTH, HEIGHT)
+        # game.render_games()
+        bot = Bot(game)
         score = 0
         game_memory = []
         for _ in range(GOAL_STEPS):
-            action = [0 for _ in range(WIDTH*HEIGHT)]
-            action[random.randrange(0, WIDTH*HEIGHT)] = 1
-            action = np.array(action)
+            # action = [0 for _ in range(WIDTH*HEIGHT)]
+            # action[random.randrange(0, WIDTH*HEIGHT)] = 1
+            # action = np.array(action)
+            action = bot.look_for_empty()
+            # print("ACTION: ", action)
             observation, done, reward = game.enter_input(action)
 
             game_memory.append([observation, action])
@@ -128,7 +133,7 @@ for each_game in range(10):
     score = 0
     game_memory = []
     game = main.MinesGame(8, 8)
-    observations = game.get_game_board()
+    observations = game.game_board
 
     for _ in range(GOAL_STEPS):
         game.render_games()

@@ -1,11 +1,13 @@
 import numpy as np
+import random
 from main import MinesGame
 class Bot():
     def __init__(self, game):
         self.game = game
+
+    def render_games():
         game.render_games()
-        output = self.look_for_empty()
-        print(output)
+
 
     def look_for_empty(self):
         index = 0
@@ -79,6 +81,9 @@ class Bot():
                             self.send_input(number)
                             return self.number_to_action(number)
 
+        action = [0 for _ in range(self.game.WIDTH*self.game.HEIGHT)]
+        action[random.randrange(0, self.game.WIDTH*self.game.HEIGHT)] = 1
+        return np.array(action)
 
 
 
@@ -92,15 +97,13 @@ class Bot():
         action[number] = 1
         return np.array(action)
 
+    #FIXME Inecessary
     def send_input(self, number):
         if self.over:
             return
-        action = self.number_to_action(number)
-        self.game.enter_input(action)
-        self.game.print_board()
         self.over = True
+        action = self.number_to_action(number)
+        # self.game.enter_input(action)
 
 
 
-game = MinesGame(8, 8)
-bot = Bot(game)
