@@ -79,13 +79,23 @@ class MinesGame:
         print(f"MINE_COUNT: {mine_count}")
         return wrong
 
+    def get_mine_location_from_int(self, number):
+        mine_location = {
+            "row": math.floor(number / self.WIDTH),
+            "column": number % self.HEIGHT
+        }
+        return mine_location
 
 
-    def print_board(self, game=True):
-        if game:
+
+    def print_board(self, game=True, board=None):
+        # if game:
+            # board = self.game_board
+        # else:
+            # board = self.board
+        if board is None:
             board = self.game_board
-        else:
-            board = self.board
+
         index = 0
         table = BeautifulTable()
         for row in board:

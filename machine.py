@@ -1,4 +1,6 @@
 import random
+import copy
+from beautifultable import BeautifulTable
 from datetime import datetime
 from bot import Bot
 import sys
@@ -14,9 +16,9 @@ LR = 1e-3
 HEIGHT = 8
 WIDTH = 8
 GOAL_STEPS = 500
-INITIAL_GAMES = 20000
-SCORE_REQUIREMENTS = 0
-EPOCHS = 5
+INITIAL_GAMES = 10000
+SCORE_REQUIREMENTS = 10
+EPOCHS = 3
 #10 > 3
 
 
@@ -24,26 +26,30 @@ def initial_population():
     training_data = []
     scores = []
     accepted_scores = []
-    for _ in range(INITIAL_GAMES):
+    for i in range(INITIAL_GAMES):
         game = main.MinesGame(WIDTH, HEIGHT)
         # game.render_games()
         bot = Bot(game)
         score = 0
         game_memory = []
+        prev_observation = copy.deepcopy(game.game_board)
         for _ in range(GOAL_STEPS):
-            # action = [0 for _ in range(WIDTH*HEIGHT)]
-            # action[random.randrange(0, WIDTH*HEIGHT)] = 1
-            # action = np.array(action)
             action = bot.look_for_empty()
-            # print("ACTION: ", action)
             observation, done, reward = game.enter_input(action)
-
-            game_memory.append([observation, action])
-
-            score += reward
 
             if done:
                 break
+
+            data = [prev_observation, action]
+            # if i == 0:
+                # print(game.get_mine_location_from_int(np.argmax(data[1])))
+                # game.print_board(board=data[0])
+                # print("PAIR --------------------------")
+            game_memory.append(data)
+            prev_observation = copy.deepcopy(observation)
+
+            score += reward
+
         if score >= SCORE_REQUIREMENTS:
             accepted_scores.append(score)
             for data in game_memory:
@@ -66,13 +72,25 @@ def neuronal_network_model(input_size):
     network = fully_connected(network, 256, activation="relu")
     network = dropout(network, 0.8)
 
+    network = fully_connected(network, 256, activation="relu")
+    network = dropout(network, 0.8)
+
+    network = fully_connected(network, 256, activation="relu")
+    network = dropout(network, 0.8)
+
     network = fully_connected(network, 512, activation="relu")
     network = dropout(network, 0.8)
 
-    network = fully_connected(network, 1024, activation="relu")
+    # network = fully_connected(network, 1024, activation="relu")
+    # network = dropout(network, 0.8)
+
+    # network = fully_connected(network, 512, activation="relu")
+    # network = dropout(network, 0.8)
+
+    network = fully_connected(network, 256, activation="relu")
     network = dropout(network, 0.8)
 
-    network = fully_connected(network, 512, activation="relu")
+    network = fully_connected(network, 256, activation="relu")
     network = dropout(network, 0.8)
 
     network = fully_connected(network, 256, activation="relu")
@@ -142,10 +160,8 @@ for each_game in range(10):
             # np.array(observations).reshape(-1, len(observations[0]), HEIGHT)
             x
         )[0]
-        mine_location = {
-            "row": math.floor(np.argmax(action) / WIDTH),
-            "column": np.argmax(action) % HEIGHT
-        }
+
+        mine_location = game.get_mine_location_from_int(np.argmax(action))
         print("ACTION: ", mine_location)
 
         choices.append(action)
