@@ -1,4 +1,5 @@
 import random
+from typing import Tuple
 import math
 import array
 from beautifultable import BeautifulTable
@@ -34,7 +35,7 @@ class MinesGame:
     def render_games(self):
         self.render = True
 
-    def enter_input(self, mine_location) -> (list, bool, int):
+    def enter_input(self, mine_location) -> Tuple[list, bool, int]:
         mine_location = np.argmax(mine_location)
         row = math.floor(mine_location / self.WIDTH)
         column = (mine_location % self.HEIGHT)
@@ -70,7 +71,7 @@ class MinesGame:
                 "column": (mine_location % self.HEIGHT) - 1
             }
 
-            if self.game_board[mine_location["row"]][mine_location["column"]] != -3:
+            if self.game_board[mine_location["row"]][column_index] != -3:
                 wrong = True
                 break
             else:
@@ -124,57 +125,57 @@ class MinesGame:
             # Transform from the numbers to column and row
             # -1 is becuase it's not 0 indexed
             mine_location = {
-                "row": math.floor(mine_location / self.WIDTH) - 1,
-                "column": (mine_location % self.HEIGHT) - 1
+                "row": math.floor(mine_location / self.WIDTH),
+                "column": (mine_location % self.HEIGHT)
             }
+            row_index = mine_location["row"]
+            column_index = mine_location["column"]
+
 
             # +1 To fields next to it
             # TOP
-            if mine_location["row"] > 0:
-                row = self.board[mine_location["row"] - 1]
+            if row_index > 0:
 
                 # MIDDLE
-                row[mine_location["column"]] += 1
+                self.board[row_index - 1][column_index] += 1
 
                 # RIGHT
-                if mine_location["column"] + 1 < self.WIDTH:
-                    row[mine_location["column"] + 1] += 1
+                if column_index < self.WIDTH - 1:
+                    self.board[row_index - 1][column_index + 1] += 1
 
                 # LEFT
-                if mine_location["column"] <= self.WIDTH - 1 and mine_location["column"] > 0:
-                    row[mine_location["column"] - 1] += 1
+                if column_index > 0:
+                    self.board[row_index - 1][column_index - 1] += 1
 
             # MIDDLE 
 
-            row = self.board[mine_location["row"]]
 
-            if mine_location["column"] > 0:
-                row[mine_location["column"] - 1] += 1
+            if column_index > 0:
+                self.board[row_index][column_index - 1] += 1
 
-            if mine_location["column"] < self.WIDTH - 1:
-                row[mine_location["column"] + 1] += 1
+            if column_index < self.WIDTH - 1:
+                self.board[row_index][column_index + 1] += 1
 
             # BOTTOM
 
             if mine_location["row"] < self.HEIGHT - 1:
-                row = self.board[mine_location["row"] + 1]
 
                 # MIDDLE
-                row[mine_location["column"]] += 1
+                self.board[row_index + 1][column_index] += 1
 
                 # RIGHT
-                if mine_location["column"] < self.WIDTH - 1:
-                    row[mine_location["column"] + 1] += 1
+                if column_index < self.WIDTH - 1:
+                    self.board[row_index + 1][column_index + 1] += 1
 
                 # LEFT
-                if mine_location["column"] > 0:
-                    row[mine_location["column"] - 1] += 1
+                if column_index > 0:
+                    self.board[row_index + 1][column_index - 1] += 1
 
             # Write all the mines
             for mine_location in self.mines_location:
                 mine_location = {
-                    "row": math.floor(mine_location / self.WIDTH) - 1,
-                    "column": (mine_location % self.HEIGHT) - 1
+                    "row": math.floor(mine_location / self.WIDTH),
+                    "column": (mine_location % self.HEIGHT)
                 }
                 self.board[mine_location["row"]][mine_location["column"]] = -1
 
@@ -224,5 +225,6 @@ class MinesGame:
         # I sorted them so I can find them easier when I create the board
         sorted_numbers = sorted(random_numbers)
         return sorted_numbers
+
 
 

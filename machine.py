@@ -1,7 +1,7 @@
 import random
 import copy
 from beautifultable import BeautifulTable
-from datetime import datetime
+from time import gmtime, strftime
 from bot import Bot
 import sys
 import math
@@ -16,10 +16,10 @@ LR = 1e-3
 HEIGHT = 8
 WIDTH = 8
 GOAL_STEPS = 500
-INITIAL_GAMES = 10000
+# INITIAL_GAMES = 50000
+INITIAL_GAMES = 100
 SCORE_REQUIREMENTS = 10
-EPOCHS = 3
-#10 > 3
+EPOCHS = 4
 
 
 def initial_population():
@@ -41,10 +41,6 @@ def initial_population():
                 break
 
             data = [prev_observation, action]
-            # if i == 0:
-                # print(game.get_mine_location_from_int(np.argmax(data[1])))
-                # game.print_board(board=data[0])
-                # print("PAIR --------------------------")
             game_memory.append(data)
             prev_observation = copy.deepcopy(observation)
 
@@ -80,12 +76,6 @@ def neuronal_network_model(input_size):
 
     network = fully_connected(network, 512, activation="relu")
     network = dropout(network, 0.8)
-
-    # network = fully_connected(network, 1024, activation="relu")
-    # network = dropout(network, 0.8)
-
-    # network = fully_connected(network, 512, activation="relu")
-    # network = dropout(network, 0.8)
 
     network = fully_connected(network, 256, activation="relu")
     network = dropout(network, 0.8)
@@ -147,6 +137,7 @@ else:
 
 scores = []
 choices = []
+print_rounds = False
 for each_game in range(10):
     score = 0
     game_memory = []
@@ -154,15 +145,14 @@ for each_game in range(10):
     observations = game.game_board
 
     for _ in range(GOAL_STEPS):
-        game.render_games()
+        if print_rounds:
+            game.render_games()
         x = np.array(observations).reshape((-1, WIDTH, HEIGHT))
-        action = model.predict(
-            # np.array(observations).reshape(-1, len(observations[0]), HEIGHT)
-            x
-        )[0]
+        action = model.predict(x)[0]
 
         mine_location = game.get_mine_location_from_int(np.argmax(action))
-        print("ACTION: ", mine_location)
+        if print_rounds:
+            print("ACTION: ", mine_location)
 
         choices.append(action)
 
@@ -172,10 +162,13 @@ for each_game in range(10):
         if done:
             break
 
-    print("-------------------------------------------------------------------")
+    print(f"------------------{score}-----------------")
     scores.append(score)
 
 average = sum(scores) / len(scores)
 print("Average score: ", average)
+date = strftime("%Y-%m-%d-%H:%M:%S")
+print(date)
 
-model.save(f"models/A-{average}-{datetime.now()}.model")
+model.save(f"models/A-{average}-{date}.model")
+
