@@ -41,9 +41,11 @@ class MinesGame:
         column = (mine_location % self.HEIGHT)
         over = False
         reward = 1
-        if (self.board[row][column] == -1) or (self.game_board[row][column] == 0) or (self.game_board[row][column] != -2):
-            if self.board[row][column] == -1:
+        hit_square = self.board[row][column]
+        if (hit_square == -1) or (hit_square  == 0) or (self.game_board[row][column] != -2):
+            if hit_square == -1:
                 self.game_board[row][column] = self.board[row][column]
+
             over = True
             reward = 0
         else:
@@ -87,20 +89,23 @@ class MinesGame:
         }
         return mine_location
 
+    def create_and_fill_board(self, item_to_fill=0):
+        board = []
+        for column in range(self.WIDTH):
+            board.append([])
+            for _row in range(self.HEIGHT):
+                board[column].append(item_to_fill)
+        return board
+
 
 
     def print_board(self, game=True, board=None):
-        # if game:
-            # board = self.game_board
-        # else:
-            # board = self.board
         if board is None:
             board = self.game_board
 
         index = 0
         table = BeautifulTable()
         for row in board:
-            # print(index, board[row])
             table.append_row(row)
             index += 1
 
@@ -108,6 +113,7 @@ class MinesGame:
 
 
     def create_board(self):
+        # FIXME: use the create_and_fill_board function
         self.board = []
         self.game_board = []
         # Fill with 0
