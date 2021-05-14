@@ -7,8 +7,11 @@ import sys
 import math
 import tflearn
 from tflearn.layers.core import input_data, dropout, fully_connected
+from tflearn.layers.conv import conv_2d, max_pool_2d
 from tflearn.layers.estimator import regression
 from statistics import mean, median
+from tflearn.data_preprocessing import ImagePreprocessing
+from tflearn.data_augmentation import ImageAugmentation
 import numpy as np
 import main
 
@@ -16,10 +19,10 @@ LR = 1e-3
 HEIGHT = 8
 WIDTH = 8
 GOAL_STEPS = 500
-# INITIAL_GAMES = 50000
-INITIAL_GAMES = 100
-SCORE_REQUIREMENTS = 10
-EPOCHS = 4
+INITIAL_GAMES = 10
+SCORE_REQUIREMENTS = 20
+EPOCHS = 5
+# 9 best
 
 
 def initial_population():
@@ -60,53 +63,74 @@ def initial_population():
 
 
 def neuronal_network_model(input_size):
-    network = input_data(shape=[None, input_size, 8], name="input")
+    #FIXME: probably don't even need max pooling "https://deeplizard.com/learn/video/ZjM_XQa5s6s"
+    #TODO: also see http://tflearn.org/data_augmentation/#image-augmentation for better results
+    #TODO: example for CNN https://www.kaggle.com/rhammell/tflearn-convolutional-neural-network
+    #TODO: add data_prepocessing and data_augmentation for better results in input_data
 
-    network = fully_connected(network, 128, activation="relu")
-    network = dropout(network, 0.8)
+    #                                                       3
+    network = input_data(shape=[None, input_size, WIDTH, HEIGHT], name="input")
+    network = conv_2d(network, 32, 3, activation='relu')
+    network = max_pool_2d(network, 2)
+    network = conv_2d(network, 64, 3, activation='relu')
+    network = conv_2d(network, 64, 3, activation='relu')
+    network = max_pool_2d(network, 2)
+    network = fully_connected(network, 512, activation='relu')
+    network = dropout(network, 0.5)
+    network = fully_connected(network, WIDTH*HEIGHT, activation='softmax')
+    network = regression(network,
+                         optimizer='adam',
+                         loss='categorical_crossentropy',
+                         learning_rate=LR) # I changed this to this but it was 0.001
+    model = tflearn.DNN(network, tensorboard_verbose=0)
 
-    network = fully_connected(network, 256, activation="relu")
-    network = dropout(network, 0.8)
+    # network = fully_connected(network, 128, activation="relu")
+    # network = dropout(network, 0.8)
 
-    network = fully_connected(network, 256, activation="relu")
-    network = dropout(network, 0.8)
+    # network = fully_connected(network, 256, activation="relu")
+    # network = dropout(network, 0.8)
 
-    network = fully_connected(network, 256, activation="relu")
-    network = dropout(network, 0.8)
+    # network = fully_connected(network, 256, activation="relu")
+    # network = dropout(network, 0.8)
 
-    network = fully_connected(network, 512, activation="relu")
-    network = dropout(network, 0.8)
+    # network = fully_connected(network, 256, activation="relu")
+    # network = dropout(network, 0.8)
 
-    network = fully_connected(network, 256, activation="relu")
-    network = dropout(network, 0.8)
+    # network = fully_connected(network, 512, activation="relu")
+    # network = dropout(network, 0.8)
 
-    network = fully_connected(network, 256, activation="relu")
-    network = dropout(network, 0.8)
+    # network = fully_connected(network, 256, activation="relu")
+    # network = dropout(network, 0.8)
 
-    network = fully_connected(network, 256, activation="relu")
-    network = dropout(network, 0.8)
+    # network = fully_connected(network, 256, activation="relu")
+    # network = dropout(network, 0.8)
 
-    network = fully_connected(network, 128, activation="relu")
-    network = dropout(network, 0.8)
+    # network = fully_connected(network, 256, activation="relu")
+    # network = dropout(network, 0.8)
+
+    # network = fully_connected(network, 128, activation="relu")
+    # network = dropout(network, 0.8)
 
     # 2 Is probably wrong.
-    network = fully_connected(network, WIDTH*HEIGHT, activation="softmax")
-    network = regression(
-        network,
-        optimizer="adam",
-        learning_rate=LR,
-        loss="categorical_crossentropy",
-        name="targets",
-    )
+    # network = fully_connected(network, WIDTH*HEIGHT, activation="softmax")
+    # network = regression(
+        # network,
+        # optimizer="adam",
+        # learning_rate=LR,
+        # loss="categorical_crossentropy",
+        # name="targets",
+    # )
 
     model = tflearn.DNN(network, tensorboard_dir="log")
     return model
 
 
 def train_model(training_data, model=False):
+    print("train")
     x = np.array([i[0] for i in training_data]).reshape(
-        (-1, len(training_data[0][0]), HEIGHT)
+        (-1, WIDTH, HEIGHT, 1)
     )
+    # x = [i[0] for i in training_data]
     y = [i[1] for i in training_data]
     if not model:
         model = neuronal_network_model(input_size=len(x[0]))
@@ -114,8 +138,9 @@ def train_model(training_data, model=False):
     print("FIT")
 
     model.fit(
-        {"input": x},
-        {"targets": y},
+        # {"input": x},
+        # {"targets": y},
+        x, y,
         n_epoch=EPOCHS,
         snapshot_step=500,
         show_metric=True,
@@ -138,7 +163,7 @@ else:
 scores = []
 choices = []
 print_rounds = False
-for each_game in range(10):
+for each_game in range(100):
     score = 0
     game_memory = []
     game = main.MinesGame(8, 8)
