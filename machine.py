@@ -19,9 +19,9 @@ LR = 1e-3
 HEIGHT = 8
 WIDTH = 8
 GOAL_STEPS = 500
-INITIAL_GAMES = 10
+INITIAL_GAMES = 10000
 SCORE_REQUIREMENTS = 20
-EPOCHS = 5
+EPOCHS = 3
 # 9 best
 
 
@@ -69,7 +69,7 @@ def neuronal_network_model(input_size):
     #TODO: add data_prepocessing and data_augmentation for better results in input_data
 
     #                                                       3
-    network = input_data(shape=[None, input_size, WIDTH, HEIGHT], name="input")
+    network = input_data(shape=[None, input_size, WIDTH, 1], name="input")
     network = conv_2d(network, 32, 3, activation='relu')
     network = max_pool_2d(network, 2)
     network = conv_2d(network, 64, 3, activation='relu')
@@ -127,10 +127,11 @@ def neuronal_network_model(input_size):
 
 def train_model(training_data, model=False):
     print("train")
-    x = np.array([i[0] for i in training_data]).reshape(
-        (-1, WIDTH, HEIGHT, 1)
+    x = np.array([i[0] for i in training_data])    # x = [i[0] for i in training_data]
+    x = x.reshape(
+        (-1, WIDTH, WIDTH, 1)
     )
-    # x = [i[0] for i in training_data]
+
     y = [i[1] for i in training_data]
     if not model:
         model = neuronal_network_model(input_size=len(x[0]))
@@ -172,8 +173,12 @@ for each_game in range(100):
     for _ in range(GOAL_STEPS):
         if print_rounds:
             game.render_games()
-        x = np.array(observations).reshape((-1, WIDTH, HEIGHT))
+        x = np.array(observations).reshape((-1,WIDTH, WIDTH, 1))
         action = model.predict(x)[0]
+
+        # x = x.reshape(
+            # (-1, WIDTH, WIDTH, 1)
+        # )
 
         mine_location = game.get_mine_location_from_int(np.argmax(action))
         if print_rounds:
