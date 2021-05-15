@@ -20,9 +20,9 @@ LR = 1e-3
 HEIGHT = 8
 WIDTH = 8
 GOAL_STEPS = 500
-INITIAL_GAMES = 20000
-SCORE_REQUIREMENTS = 28
-EPOCHS = 3
+INITIAL_GAMES = 40000
+SCORE_REQUIREMENTS = 35
+EPOCHS = 7
 # 9 best
 
 
@@ -43,7 +43,7 @@ def initial_population():
         prev_observation = copy.deepcopy(game.game_board)
         for _ in range(GOAL_STEPS):
             action = bot.look_for_empty()
-            observation, done, reward = game.enter_input(action)
+            observation, done, reward, won = game.enter_input(action)
 
             if done:
                 break
@@ -54,16 +54,17 @@ def initial_population():
 
             score += reward
 
-        if score >= SCORE_REQUIREMENTS:
+        # if score >= SCORE_REQUIREMENTS:
+        if won:
             accepted_scores.append(score)
             for data in game_memory:
                 training_data.append(data)
 
         scores.append(score)
     training_data_save = np.array(training_data)
-    # np.save("training_data/saved.npy", training_data_save)
     print("Average accepted score: ", mean(accepted_scores))
     print("Accepted scores: ", len(accepted_scores))
+    # np.save(f"training_data/G-{INITIAL_GAMES}-A-{mean(accepted_scores)}-acce.npy", training_data_save, allow_pickle=True)
     return training_data
 
 
@@ -119,11 +120,15 @@ def train_model(training_data, model=False):
     return model
 
 
-if len(sys.argv) > 1:
-    new_model = neuronal_network_model(WIDTH)
-    new_model.load(f"models/{sys.argv[1]}")
-    model = new_model
-    print(type(model))
+if len(sys.argv) > 2:
+    if sys.argv[1] == "model":
+        new_model = neuronal_network_model(WIDTH)
+        new_model.load(sys.argv[2])
+        model = new_model
+    else:
+        print(sys.argv[2])
+        training_data = np.load(sys.argv[2], allow_pickle=True)
+        model = train_model(training_data)
 else:
     training_data = initial_population()
     model = train_model(training_data)
@@ -131,6 +136,7 @@ else:
 
 scores = []
 choices = []
+wins = []
 print_rounds = False
 for each_game in range(100):
     score = 0
@@ -154,19 +160,25 @@ for each_game in range(100):
 
         choices.append(action)
 
-        observations, done, reward = game.enter_input(action)
+        observations, done, reward, won = game.enter_input(action)
         game_memory.append([observations, action])
         score += reward
         if done:
             break
 
-    print(f"------------------won: cwwon score: {score}-----------------")
+    print(f"------------------ won: {won} score: {score} -----------------")
     scores.append(score)
+    if won:
+        wins.append(1)
+    else:
+        wins.append(0)
 
-average = sum(scores) / len(scores)
-print("Average score: ", average)
+average_score = sum(scores) / len(scores)
+average_win = sum(wins) / len(scores)
+print("Average score: ", average_score)
+print("Average win: ", average_win)
 date = strftime("%Y-%m-%d-%H:%M:%S")
 print(date)
 
-model.save(f"models/A-{average}-{date}.model")
+model.save(f"models/A-{average_score}-{date}.model")
 

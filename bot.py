@@ -1,5 +1,6 @@
 import numpy as np
 import sys
+from statistics import mean, median
 import copy
 import random
 from main import MinesGame
@@ -11,6 +12,7 @@ class Bot():
         self.mines_board = game.create_and_fill_board(0)
         self.debug = False
         self.over = False
+        self.moves = 0
 
 
 
@@ -52,16 +54,6 @@ class Bot():
         # return np.array(action)
 
 
-    def test(self):
-        tries = 30
-        for i in range(tries):
-            print(i)
-            action = self.look_for_empty()
-            observation, done, reward = game.enter_input(action)
-            if done:
-                game.print_board(board=self.mines_board)
-                game.print_board()
-                break
 
     def mark_mines(self, neighbours, column):
         free_squares = []
@@ -112,6 +104,22 @@ class Bot():
         self.over = False
 
         # Check if there is some 0 adjecent which is a sure not bomb
+        for mine_target_value_index in range(5):
+            for row_index in range(len(self.game.game_board)):
+                row = self.game.game_board[row_index]
+                if self.over:
+                    break
+                for column_index in range(len(row)):
+                    if self.over:
+                        break
+                    column = self.game.game_board[row_index][column_index]
+                    if column == mine_target_value_index:
+                        neighbours_instance = Neighbours([column_index, row_index], self.game.board)
+                        neighbours = neighbours_instance.get_neightbours(column_index, row_index)
+                        neighbours = neighbours_instance.remove_non_existing_neighbours([column_index, row_index], neighbours,
+                                                    neighbours_instance)
+                        self.mark_mines(neighbours, column)
+
         for row_index in range(len(self.game.game_board)):
             row = self.game.game_board[row_index]
             if self.over:
@@ -126,10 +134,10 @@ class Bot():
                     neighbours = neighbours_instance.get_neightbours(column_index, row_index)
                     neighbours = neighbours_instance.remove_non_existing_neighbours([column_index, row_index], neighbours,
                                                 neighbours_instance)
-                    self.mark_mines(neighbours, column)
+                    # self.mark_mines(neighbours, column)
                     result = self.find_free_move(neighbours, column, mine_value_index)
-                    # return result
                     if result.size != 0:
+                        self.moves += 1
                         return result
 
         return self.look_for_best(mine_value_index + 1)
@@ -137,19 +145,24 @@ class Bot():
 
 
     def number_to_action(self, number):
-        action = []
-        for i in range(self.game.WIDTH * self.game.HEIGHT):
-            action.append(0)
-
+        action = [0 for _ in range(self.game.WIDTH*self.game.HEIGHT)]
         action[number] = 1
         return np.array(action)
 
     def random_action(self):
-        action = [0 for _ in range(self.game.WIDTH*self.game.HEIGHT)]
         random_number = random.randrange(0, self.game.WIDTH*self.game.HEIGHT)
-        action[random_number] = 1
+        return self.number_to_action(random_number) 
 
-        return np.array(action)
+    def random_secure_action():
+        if self.over:
+            return
+        index = 0
+        for row_index in range(self.WIDTH):
+            for column_index in range(self.WIDTH):
+                square = self.game_board[row_index][column_index]
+                if square == -2:
+                    return self.number_to_action(index)
+                index += 1
 
 
 class Neighbours():
@@ -270,15 +283,44 @@ class Neighbours():
 
 
 
-if __name__ == "__main__":
-    game = MinesGame(8, 8)
-    game.debug = True
-    bot = Bot(game)
-    game.print_board()
-    output = np.argmax(bot.look_for_empty())
-    output = game.get_mine_location_from_int(output)
 
+def test(amount):
+    tries = 50
+    games = 100 if amount != "single" else 1
+    scores = []
+    wins = []
+    debug = True
+
+    for _ in range(games):
+        game = MinesGame(8, 8)
+        bot = Bot(game)
+        if debug:
+            bot.debug = True
+            game.print_board()
+        for i in range(tries):
+            action = bot.look_for_empty()
+
+            if debug:
+                print(i)
+                print("action: ", action)
+            observation, done, reward, won = game.enter_input(action)
+            if done:
+                if debug:
+                    game.print_board(board=bot.mines_board)
+                    game.print_board()
+                    print("Moves; ", bot.moves)
+                    print("WON: ", won)
+                scores.append(i)
+                if won:
+                    wins.append(1)
+                else:
+                    wins.append(0)
+                break
+    print(scores)
+    print("Average score: ", mean(scores))
+    print("Average win: ", mean(wins))
+
+if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "test":
-        print("ZEROS: ", game.get_zeros_in_board())
-        bot.debug = True
-        bot.test()
+        test(sys.argv[2])
+

@@ -51,18 +51,18 @@ class MinesGame:
             reward = 0
         else:
             self.game_board[row][column] = self.board[row][column]
-
-        self.locations_free -= 1
-        if self.locations_free <= 0:
-            over = True
-            won = True
+            self.locations_free -= 1
 
         if self.render:
             self.print_board()
 
+        if self.locations_free == 0:
+            over = True
+            won = True
 
-        return self.game_board, over, reward
 
+
+        return self.game_board, over, reward, won
 
 
     def check_if_correct(self):
@@ -179,22 +179,22 @@ class MinesGame:
                 if column_index > 0:
                     self.board[row_index + 1][column_index - 1] += 1
 
-            # Write all the mines
-            for mine_location in self.mines_location:
-                mine_location = {
-                    "row": math.floor(mine_location / self.WIDTH),
-                    "column": (mine_location % self.HEIGHT)
-                }
-                self.board[mine_location["row"]][mine_location["column"]] = -1
+        # Write all the mines
+        for mine_location in self.mines_location:
+            mine_location = {
+                "row": math.floor(mine_location / self.WIDTH),
+                "column": (mine_location % self.HEIGHT)
+            }
+            self.board[mine_location["row"]][mine_location["column"]] = -1
 
-        self.locations_free = 0
-        for row in range(len(self.board)):
-            for column in range(len(self.board[row])):
+        zeros = 0
+        for row in range(self.WIDTH):
+            for column in range(self.HEIGHT):
                 if self.board[row][column] == 0:
                     self.game_board[row][column] = 0
-                    self.locations_free += 1
+                    zeros += 1
 
-        self.locations_free = (self.HEIGHT * self.WIDTH) - self.locations_free
+        self.locations_free = (self.HEIGHT * self.WIDTH) - zeros - self.MINES_AMOUNT
 
 
     def get_zeros_in_board(self):
