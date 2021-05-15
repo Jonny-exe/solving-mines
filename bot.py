@@ -123,7 +123,6 @@ class Bot():
                             neighbour_value = self.game.game_board[y][x]
                             if neighbour_value == -2 and self.mines_board[y][x] != 1:
                                 number = self.coordenates_to_number(x, y)
-                                print("DEBUG: ", self.debug)
                                 if self.debug:
                                     print(f"Return, x: {x}, y:  {y}")
                                 return self.number_to_action(number)
