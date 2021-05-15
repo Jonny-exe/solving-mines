@@ -40,6 +40,7 @@ class MinesGame:
         row = math.floor(mine_location / self.WIDTH)
         column = (mine_location % self.HEIGHT)
         over = False
+        won = False
         reward = 1
         hit_square = self.board[row][column]
         if (hit_square == -1) or (hit_square  == 0) or (self.game_board[row][column] != -2):
@@ -54,6 +55,7 @@ class MinesGame:
         self.locations_free -= 1
         if self.locations_free <= 0:
             over = True
+            won = True
 
         if self.render:
             self.print_board()
@@ -193,6 +195,15 @@ class MinesGame:
                     self.locations_free += 1
 
         self.locations_free = (self.HEIGHT * self.WIDTH) - self.locations_free
+
+
+    def get_zeros_in_board(self):
+        zeros_in_board = 0
+        for row in self.board:
+            for square in row:
+                if square == 0:
+                    zeros_in_board += 1
+        return zeros_in_board
 
 
 

@@ -1,5 +1,6 @@
 import random
 import copy
+from datetime import datetime
 from beautifultable import BeautifulTable
 from time import gmtime, strftime
 from bot import Bot
@@ -19,10 +20,11 @@ LR = 1e-3
 HEIGHT = 8
 WIDTH = 8
 GOAL_STEPS = 500
-INITIAL_GAMES = 10000
-SCORE_REQUIREMENTS = 20
+INITIAL_GAMES = 20000
+SCORE_REQUIREMENTS = 28
 EPOCHS = 3
 # 9 best
+
 
 
 def initial_population():
@@ -30,6 +32,9 @@ def initial_population():
     scores = []
     accepted_scores = []
     for i in range(INITIAL_GAMES):
+        if i % 1000 == 0:
+            print(f"{i} / {INITIAL_GAMES}")
+
         game = main.MinesGame(WIDTH, HEIGHT)
         # game.render_games()
         bot = Bot(game)
@@ -81,46 +86,9 @@ def neuronal_network_model(input_size):
     network = regression(network,
                          optimizer='adam',
                          loss='categorical_crossentropy',
-                         learning_rate=LR) # I changed this to this but it was 0.001
-    model = tflearn.DNN(network, tensorboard_verbose=0)
+                         learning_rate=LR)
 
-    # network = fully_connected(network, 128, activation="relu")
-    # network = dropout(network, 0.8)
-
-    # network = fully_connected(network, 256, activation="relu")
-    # network = dropout(network, 0.8)
-
-    # network = fully_connected(network, 256, activation="relu")
-    # network = dropout(network, 0.8)
-
-    # network = fully_connected(network, 256, activation="relu")
-    # network = dropout(network, 0.8)
-
-    # network = fully_connected(network, 512, activation="relu")
-    # network = dropout(network, 0.8)
-
-    # network = fully_connected(network, 256, activation="relu")
-    # network = dropout(network, 0.8)
-
-    # network = fully_connected(network, 256, activation="relu")
-    # network = dropout(network, 0.8)
-
-    # network = fully_connected(network, 256, activation="relu")
-    # network = dropout(network, 0.8)
-
-    # network = fully_connected(network, 128, activation="relu")
-    # network = dropout(network, 0.8)
-
-    # 2 Is probably wrong.
-    # network = fully_connected(network, WIDTH*HEIGHT, activation="softmax")
-    # network = regression(
-        # network,
-        # optimizer="adam",
-        # learning_rate=LR,
-        # loss="categorical_crossentropy",
-        # name="targets",
-    # )
-
+    # model = tflearn.DNN(network, tensorboard_verbose=0)
     model = tflearn.DNN(network, tensorboard_dir="log")
     return model
 
@@ -192,7 +160,7 @@ for each_game in range(100):
         if done:
             break
 
-    print(f"------------------{score}-----------------")
+    print(f"------------------won: cwwon score: {score}-----------------")
     scores.append(score)
 
 average = sum(scores) / len(scores)
