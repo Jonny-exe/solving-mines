@@ -63,7 +63,45 @@ class Bot():
                 game.print_board()
                 break
 
+    def mark_mines(self, neighbours, column):
+        free_squares = []
+        for neighbour in neighbours:
+            x = neighbour[0]
+            y = neighbour[1]
 
+            neighbour_value = self.game.game_board[y][x]
+            if neighbour_value == -2:
+                free_squares.append([x, y])
+
+        if len(free_squares) == column:
+            index = 0
+            for square_index in range(len(free_squares)):
+                square = free_squares[square_index]
+                x = square[0]
+                y = square[1]
+                self.mines_board[y][x] = 1
+
+    def find_free_move(self, neighbours, column, mine_value_index):
+        mines_neighbour = 0
+        for neighbour in neighbours:
+            x = neighbour[0]
+            y = neighbour[1]
+            neighbour_value = self.game.game_board[y][x]
+            if self.mines_board[y][x] == 1:
+                mines_neighbour += 1
+
+        if mines_neighbour == column:
+            for neighbour in neighbours:
+                x = neighbour[0]
+                y = neighbour[1]
+                neighbour_value = self.game.game_board[y][x]
+                if neighbour_value == -2 and self.mines_board[y][x] != 1:
+                    number = self.coordenates_to_number(x, y)
+                    if self.debug:
+                        print(f"Return, x: {x}, y:  {y}")
+                    return self.number_to_action(number)
+
+        return np.array([])
 
 
     def look_for_best(self, mine_value_index) -> Union[bool, list]:
@@ -87,47 +125,16 @@ class Bot():
                     neighbours_instance = Neighbours([column_index, row_index], self.game.board)
                     neighbours = neighbours_instance.get_neightbours(column_index, row_index)
                     neighbours = neighbours_instance.remove_non_existing_neighbours([column_index, row_index], neighbours,
-
                                                 neighbours_instance)
-                    free_squares = []
-                    for neighbour in neighbours:
-                        x = neighbour[0]
-                        y = neighbour[1]
-
-                        neighbour_value = self.game.game_board[y][x]
-                        # FIXME: maybe you have to take into acount if y and x in mines_board == 1
-                        if neighbour_value == -2:
-                            free_squares.append([x, y])
-
-                    if len(free_squares) == column:
-                        index = 0
-                        for square_index in range(len(free_squares)):
-                            square = free_squares[square_index]
-                            x = square[0]
-                            y = square[1]
-                            self.mines_board[y][x] = 1
-                            # neighbours.pop()
-
-                    mines_neighbour = 0
-                    for neighbour in neighbours:
-                        x = neighbour[0]
-                        y = neighbour[1]
-                        neighbour_value = self.game.game_board[y][x]
-                        if self.mines_board[y][x] == 1:
-                            mines_neighbour += 1
-
-                    if mines_neighbour == column:
-                        for neighbour in neighbours:
-                            x = neighbour[0]
-                            y = neighbour[1]
-                            neighbour_value = self.game.game_board[y][x]
-                            if neighbour_value == -2 and self.mines_board[y][x] != 1:
-                                number = self.coordenates_to_number(x, y)
-                                if self.debug:
-                                    print(f"Return, x: {x}, y:  {y}")
-                                return self.number_to_action(number)
+                    self.mark_mines(neighbours, column)
+                    result = self.find_free_move(neighbours, column, mine_value_index)
+                    # return result
+                    if result.size != 0:
+                        return result
 
         return self.look_for_best(mine_value_index + 1)
+
+
 
     def number_to_action(self, number):
         action = []
