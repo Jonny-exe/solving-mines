@@ -3,7 +3,7 @@ import sys
 from statistics import mean, median
 import copy
 import random
-from main import MinesGame
+from game import MinesGame
 from typing import Union
 
 class Bot():

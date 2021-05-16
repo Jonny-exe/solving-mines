@@ -1,24 +1,24 @@
-import main
+from game import MinesGame
 import numpy as np
 from copy import deepcopy
 from statistics import mean, median
 from bot import Bot
 
-INITIAL_GAMES = 40000
+INITIAL_GAMES = 100
 SCORE_REQUIREMENTS = 35
 HEIGHT = 8
 WIDTH = 8
 GOAL_STEPS = 500
+accepted_scores = []
 
 def initial_population():
     training_data = []
     scores = []
-    accepted_scores = []
     for i in range(INITIAL_GAMES):
         if i % 1000 == 0:
             print(f"{i} / {INITIAL_GAMES}")
 
-        game = main.MinesGame(WIDTH, HEIGHT)
+        game = MinesGame(WIDTH, HEIGHT)
         # game.render_games()
         bot = Bot(game)
         score = 0
@@ -48,5 +48,9 @@ def initial_population():
     training_data_save = np.array(training_data)
     print("Average accepted score: ", mean(accepted_scores))
     print("Accepted scores: ", len(accepted_scores))
-    # np.save(f"training_data/G-{INITIAL_GAMES}-A-{mean(accepted_scores)}-acce.npy", training_data_save, allow_pickle=True)
     return training_data
+
+if __name__ == "__main__":
+    data = initial_population()
+    np.save(f"training_data/G-{INITIAL_GAMES}-A-{mean(accepted_scores)}-acce", data, allow_pickle=True)
+

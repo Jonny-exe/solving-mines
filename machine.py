@@ -15,7 +15,7 @@ from statistics import mean, median
 from tflearn.data_preprocessing import ImagePreprocessing
 from tflearn.data_augmentation import ImageAugmentation
 import numpy as np
-import main
+import game
 
 LR = 1e-3
 HEIGHT = 8
@@ -48,14 +48,14 @@ def neuronal_network_model(input_size):
                          loss='categorical_crossentropy',
                          learning_rate=LR)
 
-    # model = tflearn.DNN(network, tensorboard_verbose=0)
     model = tflearn.DNN(network, tensorboard_dir="log")
     return model
 
 
 def train_model(training_data, model=False):
     print("train")
-    x = np.array([i[0] for i in training_data])    # x = [i[0] for i in training_data]
+    x = np.array([i[0] for i in training_data])
+    print(x)
     x = x.reshape(
         (-1, WIDTH, WIDTH, 1)
     )
@@ -77,68 +77,11 @@ def train_model(training_data, model=False):
         run_id="openaistuff",
     )
 
+    date = strftime("%Y-%m-%d-%H:%M:%S")
+    model.save(f"models/A-{date}.model")
     return model
 
 
-if len(sys.argv) > 2:
-    if sys.argv[1] == "model":
-        new_model = neuronal_network_model(WIDTH)
-        new_model.load(sys.argv[2])
-        model = new_model
-    else:
-        print(sys.argv[2])
-        training_data = np.load(sys.argv[2], allow_pickle=True)
-        model = train_model(training_data)
-else:
-    training_data = initial_population()
-    model = train_model(training_data)
 
 
-scores = []
-choices = []
-wins = []
-print_rounds = False
-for each_game in range(100):
-    score = 0
-    game_memory = []
-    game = main.MinesGame(8, 8)
-    observations = game.game_board
-
-    for _ in range(GOAL_STEPS):
-        if print_rounds:
-            game.render_games()
-        x = np.array(observations).reshape((-1,WIDTH, WIDTH, 1))
-        action = model.predict(x)[0]
-
-        # x = x.reshape(
-            # (-1, WIDTH, WIDTH, 1)
-        # )
-
-        mine_location = game.get_mine_location_from_int(np.argmax(action))
-        if print_rounds:
-            print("ACTION: ", mine_location)
-
-        choices.append(action)
-
-        observations, done, reward, won = game.enter_input(action)
-        game_memory.append([observations, action])
-        score += reward
-        if done:
-            break
-
-    print(f"------------------ won: {won} score: {score} -----------------")
-    scores.append(score)
-    if won:
-        wins.append(1)
-    else:
-        wins.append(0)
-
-average_score = sum(scores) / len(scores)
-average_win = sum(wins) / len(scores)
-print("Average score: ", average_score)
-print("Average win: ", average_win)
-date = strftime("%Y-%m-%d-%H:%M:%S")
-print(date)
-
-model.save(f"models/A-{average_score}-{date}.model")
 
