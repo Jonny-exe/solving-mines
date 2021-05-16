@@ -1,5 +1,6 @@
 import random
 import copy
+from create_data import initial_population
 from datetime import datetime
 from beautifultable import BeautifulTable
 from time import gmtime, strftime
@@ -19,60 +20,18 @@ import main
 LR = 1e-3
 HEIGHT = 8
 WIDTH = 8
+EPOCHS = 5
 GOAL_STEPS = 500
-INITIAL_GAMES = 40000
-SCORE_REQUIREMENTS = 35
-EPOCHS = 7
 # 9 best
 
 
 
-def initial_population():
-    training_data = []
-    scores = []
-    accepted_scores = []
-    for i in range(INITIAL_GAMES):
-        if i % 1000 == 0:
-            print(f"{i} / {INITIAL_GAMES}")
-
-        game = main.MinesGame(WIDTH, HEIGHT)
-        # game.render_games()
-        bot = Bot(game)
-        score = 0
-        game_memory = []
-        prev_observation = copy.deepcopy(game.game_board)
-        for _ in range(GOAL_STEPS):
-            action = bot.look_for_empty()
-            observation, done, reward, won = game.enter_input(action)
-
-            if done:
-                break
-
-            data = [prev_observation, action]
-            game_memory.append(data)
-            prev_observation = copy.deepcopy(observation)
-
-            score += reward
-
-        # if score >= SCORE_REQUIREMENTS:
-        if won:
-            accepted_scores.append(score)
-            for data in game_memory:
-                training_data.append(data)
-
-        scores.append(score)
-    training_data_save = np.array(training_data)
-    print("Average accepted score: ", mean(accepted_scores))
-    print("Accepted scores: ", len(accepted_scores))
-    # np.save(f"training_data/G-{INITIAL_GAMES}-A-{mean(accepted_scores)}-acce.npy", training_data_save, allow_pickle=True)
-    return training_data
-
 
 def neuronal_network_model(input_size):
-    #FIXME: probably don't even need max pooling "https://deeplizard.com/learn/video/ZjM_XQa5s6s"
-    #TODO: also see http://tflearn.org/data_augmentation/#image-augmentation for better results
-    #TODO: example for CNN https://www.kaggle.com/rhammell/tflearn-convolutional-neural-network
-    #TODO: add data_prepocessing and data_augmentation for better results in input_data
+    # FIXME: probably don't even need max pooling "https://deeplizard.com/learn/video/ZjM_XQa5s6s"
+    # TODO: also see http://tflearn.org/data_augmentation/#image-augmentation for better results
+    # TODO: example for CNN https://www.kaggle.com/rhammell/tflearn-convolutional-neural-network
+    # TODO: add data_prepocessing and data_augmentation for better results in input_data
 
     #                                                       3
     network = input_data(shape=[None, input_size, WIDTH, 1], name="input")
@@ -111,6 +70,7 @@ def train_model(training_data, model=False):
         # {"input": x},
         # {"targets": y},
         x, y,
+        shuffle=True,
         n_epoch=EPOCHS,
         snapshot_step=500,
         show_metric=True,
