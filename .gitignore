@@ -130,3 +130,7 @@ dmypy.json
 
 log/
 models/
+training_data/
+models/
+.pyre_configuration
+.vscode/
