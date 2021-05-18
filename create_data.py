@@ -4,8 +4,7 @@ from copy import deepcopy
 from statistics import mean, median
 from bot import Bot
 
-# INITIAL_GAMES = 25000000
-INITIAL_GAMES = 300
+INITIAL_GAMES = 1000
 SCORE_REQUIREMENTS = 35
 HEIGHT = 8
 WIDTH = 8
@@ -13,11 +12,14 @@ GOAL_STEPS = 500
 accepted_scores = []
 
 def initial_population():
-    training_data = []
+    # training_data = []
+    X = []
+    Y = []
     scores = []
-    for i in range(INITIAL_GAMES):
-        if i % 1000 == 0:
-            print(f"{i} / {INITIAL_GAMES}")
+    data_count = 0
+    while data_count != INITIAL_GAMES :
+        if data_count % 1000 == 0:
+            print(f"{data_count + 1} / {INITIAL_GAMES}")
 
         game = MinesGame(WIDTH, HEIGHT)
         # game.render_games()
@@ -42,16 +44,19 @@ def initial_population():
                 break
         if won:
             accepted_scores.append(score)
+            data_count += 1
             for data in game_memory:
-                training_data.append(data)
+                # training_data.append(data)
+                X.append(data[0])
+                Y.append(data[1])
 
         scores.append(score)
-    training_data_save = np.array(training_data)
+    # training_data_save = np.array(training_data)
     print("Average accepted score: ", mean(accepted_scores))
     print("Accepted scores: ", len(accepted_scores))
-    return training_data
+    return X, Y
 
 if __name__ == "__main__":
-    data = initial_population()
-    np.save(f"training_data/G-{INITIAL_GAMES}-A-{mean(accepted_scores)}-acce", data, allow_pickle=True)
+    X, Y = initial_population()
+    np.savez(f"training_data/data.npz", X, Y, allow_pickle=True)
 

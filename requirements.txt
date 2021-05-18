@@ -1,4 +1,4 @@
-tflearn
-tensorflow
 numpy
 beautifultable
+pytorch
+argparse

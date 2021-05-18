@@ -1,4 +1,7 @@
 from game import MinesGame
+from time import strftime
+from net import Net
+import torch
 import numpy as np
 WIDTH = 8
 GOAL_STEPS = 500
@@ -7,26 +10,27 @@ choices = []
 wins = []
 print_rounds = False
 
-def test():
+def test(model):
     for each_game in range(100):
-        score = 0
         game_memory = []
         game = MinesGame(8, 8)
         observations = game.game_board
 
         for _ in range(GOAL_STEPS):
+            score = 0
             if print_rounds:
-                game.render_games()
-            x = np.array(observations).reshape((-1,WIDTH, WIDTH, 1))
-            action = model.predict(x)[0]
+                game.rendxer_games()
+            board = observations
+            board = torch.Tensor(board)
+            board = board.reshape([4, 1, 4, 4])
+            print(board)
 
-            # x = x.reshape(
-                # (-1, WIDTH, WIDTH, 1)
-            # )
-
-            mine_location = game.get_mine_location_from_int(np.argmax(action))
-            if print_rounds:
-                print("ACTION: ", mine_location)
+            net = Net()
+            action = net(board)
+            print(action)
+            action = torch.max(action).item()
+            action = int(round(action, 0))
+            print(action)
 
             choices.append(action)
 
@@ -50,4 +54,8 @@ def test():
     date = strftime("%Y-%m-%d-%H:%M:%S")
     print(date)
 
+
+if __name__ == "__main__":
+    model = torch.load("models/value.pth", map_location=lambda storage, loc: storage)
+    test(model)
 
