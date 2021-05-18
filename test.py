@@ -10,7 +10,7 @@ choices = []
 wins = []
 print_rounds = False
 
-def test(model):
+def test(net):
     for each_game in range(100):
         game_memory = []
         game = MinesGame(8, 8)
@@ -22,14 +22,16 @@ def test(model):
                 game.rendxer_games()
             board = observations
             board = torch.Tensor(board)
-            board = board.reshape([4, 1, 4, 4])
-            print(board)
+            board = board.reshape([1, 1, 8, 8])
 
-            net = Net()
             action = net(board)
             print(action)
+            prediction = torch.max(action, 1)
             action = torch.max(action).item()
-            action = int(round(action, 0))
+            print(prediction)
+            print(prediction[1].item())
+            action = prediction[1].item()
+            # action = int(round(action, 0))
             print(action)
 
             choices.append(action)
@@ -56,6 +58,7 @@ def test(model):
 
 
 if __name__ == "__main__":
-    model = torch.load("models/value.pth", map_location=lambda storage, loc: storage)
-    test(model)
+    net = Net()
+    net.load_state_dict(torch.load("models/value.pth"))
+    test(net)
 

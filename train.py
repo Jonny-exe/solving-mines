@@ -12,7 +12,9 @@ import torch.optim as optim
 
 class DatasetValue(Dataset):
     def __init__(self, data):
+        print(type(data))
         self.X = data["arr_0"]
+        print(self.X)
         self.Y = data["arr_1"]
 
     def __len__(self):
@@ -23,7 +25,7 @@ class DatasetValue(Dataset):
 
 
 def train(dataset=[]):
-    EPOCHS = 100
+    EPOCHS = 3
     BATCH_SIZE = 256
 
     model = Net()
@@ -53,7 +55,8 @@ def train(dataset=[]):
 
             optimizer.zero_grad()
             data = data.reshape([256, 1, 8, 8])
-            outputs = model(data).reshape([256, 64, 1])
+            outputs = model(data)
+            outputs = outputs.reshape([256, 64, 1])
 
             loss = criterion(outputs, target)
             loss.backward()

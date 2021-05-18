@@ -4,7 +4,7 @@ from copy import deepcopy
 from statistics import mean, median
 from bot import Bot
 
-INITIAL_GAMES = 1000
+INITIAL_GAMES = 100
 SCORE_REQUIREMENTS = 35
 HEIGHT = 8
 WIDTH = 8
