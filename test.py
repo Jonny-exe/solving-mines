@@ -16,10 +16,8 @@ def test(net):
         game = MinesGame(8, 8)
         observations = game.game_board
 
+        score = 0
         for _ in range(GOAL_STEPS):
-            score = 0
-            if print_rounds:
-                game.rendxer_games()
             board = observations
             board = torch.Tensor(board)
             board = board.reshape([1, 1, 8, 8])
@@ -33,10 +31,12 @@ def test(net):
             action = prediction[1].item()
             # action = int(round(action, 0))
             print(action)
+            game.print_board()
 
             choices.append(action)
 
             observations, done, reward, won = game.enter_input(action)
+            print(done, won)
             game_memory.append([observations, action])
             score += reward
             if done:

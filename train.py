@@ -25,7 +25,7 @@ class DatasetValue(Dataset):
 
 
 def train(dataset=[]):
-    EPOCHS = 3
+    EPOCHS = 100
     BATCH_SIZE = 256
 
     model = Net()
@@ -67,8 +67,8 @@ def train(dataset=[]):
             # if i % 2000 == 1999:
                 # print('[%d, %5d] loss: %.3f' %
                       # (epoch + 1, i + 1, running_loss / 2000))
-            torch.save(model.state_dict(), "models/value.pth")
             running_loss = 0.0
+    torch.save(model.state_dict(), "models/value.pth")
     print("Finished training")
 
 

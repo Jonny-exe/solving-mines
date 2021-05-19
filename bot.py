@@ -153,13 +153,13 @@ class Bot():
         random_number = random.randrange(0, self.game.WIDTH*self.game.HEIGHT)
         return self.number_to_action(random_number) 
 
-    def random_secure_action():
+    def random_secure_action(self):
         if self.over:
             return
         index = 0
-        for row_index in range(self.WIDTH):
-            for column_index in range(self.WIDTH):
-                square = self.game_board[row_index][column_index]
+        for row_index in range(self.game.WIDTH):
+            for column_index in range(self.game.WIDTH):
+                square = self.game.game_board[row_index][column_index]
                 if square == -2:
                     return self.number_to_action(index)
                 index += 1
