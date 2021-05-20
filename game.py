@@ -102,13 +102,28 @@ class MinesGame:
 
 
     def print_board(self, game=True, board=None):
+        symbols_map = {
+            "-2": "🟩",
+            "0": "🟫",
+            "1": "𝟣",
+            "2": "𝟤",
+            "3": "𝟥",
+            "4": "𝟦",
+            "5": "𝟧",
+            "6": "𝟨",
+            "7": "𝟩",
+            "8": "𝟪"
+        }
         if board is None:
             board = self.game_board
 
         index = 0
         table = BeautifulTable()
         for row in board:
-            table.append_row(row)
+            fancy_row = []
+            for column_index in range(len(row)):
+                fancy_row.append(symbols_map[str(row[column_index])])
+            table.append_row(fancy_row)
             index += 1
 
         print(table)
