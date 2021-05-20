@@ -134,3 +134,4 @@ training_data/
 models/
 .pyre_configuration
 .vscode/
+best.txt
