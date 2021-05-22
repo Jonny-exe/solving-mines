@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from game import MinesGame
 from time import strftime
 from net import Net
@@ -10,12 +11,14 @@ choices = []
 wins = []
 print_rounds = False
 
-def test(net):
+def test(net, show_games):
+    print("START")
+    date = strftime("%Y-%m-%d-%H:%M:%S")
+    print(date)
     for each_game in range(100):
         game_memory = []
         game = MinesGame(8, 8)
         observations = game.game_board
-
         score = 0
         for _ in range(GOAL_STEPS):
             board = observations
@@ -23,20 +26,19 @@ def test(net):
             board = board.reshape([1, 1, 8, 8])
 
             action = net(board)
-            print(action)
             prediction = torch.max(action, 1)
+
+            if show_games:
+                print(action)
             action = torch.max(action).item()
-            print(prediction)
-            print(prediction[1].item())
             action = prediction[1].item()
             # action = int(round(action, 0))
-            print(action)
-            game.print_board()
+            if show_games:
+                game.print_board()
 
             choices.append(action)
 
             observations, done, reward, won = game.enter_input(action)
-            print(done, won)
             game_memory.append([observations, action])
             score += reward
             if done:
@@ -60,5 +62,18 @@ def test(net):
 if __name__ == "__main__":
     net = Net()
     net.load_state_dict(torch.load("models/value.pth"))
-    test(net)
 
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Main file')
+    parser.add_argument("--print", type=bool)
+
+    args = parser.parse_args()
+
+
+    if args.print:
+        show_games = True
+    elif args.print is None:
+        show_games = False
+
+    test(net, show_games)

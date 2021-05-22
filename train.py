@@ -3,12 +3,11 @@ import numpy as np
 import argparse
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader, Dataset
-from create_data import initial_population
 
 # Loss and optimizier 
-import torch
 import torch.optim as optim
+from torch.utils.data import DataLoader, Dataset
+from create_data import initial_population
 
 class DatasetValue(Dataset):
     def __init__(self, data):
@@ -25,7 +24,7 @@ class DatasetValue(Dataset):
 
 
 def train(dataset=[]):
-    EPOCHS = 100
+    EPOCHS = 5
     BATCH_SIZE = 256
 
     model = Net()
