@@ -4,12 +4,14 @@ from time import strftime
 from net import Net
 import torch
 import numpy as np
+
 WIDTH = 8
 GOAL_STEPS = 500
 scores = []
 choices = []
 wins = []
 print_rounds = False
+
 
 def test(net, show_games):
     print("START")
@@ -65,11 +67,10 @@ if __name__ == "__main__":
 
     import argparse
 
-    parser = argparse.ArgumentParser(description='Main file')
+    parser = argparse.ArgumentParser(description="Main file")
     parser.add_argument("--print", type=bool)
 
     args = parser.parse_args()
-
 
     if args.print:
         show_games = True

@@ -38,12 +38,16 @@ class MinesGame:
     def enter_input(self, mine_location) -> Tuple[list, bool, int]:
         # mine_location = np.argmax(mine_location)
         row = math.floor(mine_location / self.WIDTH)
-        column = (mine_location % self.HEIGHT)
+        column = mine_location % self.HEIGHT
         over = False
         won = False
         reward = 1
         hit_square = self.board[row][column]
-        if (hit_square == -1) or (hit_square  == 0) or (self.game_board[row][column] != -2):
+        if (
+            (hit_square == -1)
+            or (hit_square == 0)
+            or (self.game_board[row][column] != -2)
+        ):
             if hit_square == -1:
                 self.game_board[row][column] = self.board[row][column]
 
@@ -60,10 +64,7 @@ class MinesGame:
             over = True
             won = True
 
-
-
         return self.game_board, over, reward, won
-
 
     def check_if_correct(self):
         # Check if the result is correct
@@ -72,7 +73,7 @@ class MinesGame:
         for mine_location in self.mines_location:
             mine_location = {
                 "row": math.floor(mine_location / self.WIDTH) - 1,
-                "column": (mine_location % self.HEIGHT) - 1
+                "column": (mine_location % self.HEIGHT) - 1,
             }
 
             if self.game_board[mine_location["row"]][column_index] != -3:
@@ -87,7 +88,7 @@ class MinesGame:
     def get_mine_location_from_int(self, number):
         mine_location = {
             "row": math.floor(number / self.WIDTH),
-            "column": number % self.HEIGHT
+            "column": number % self.HEIGHT,
         }
         return mine_location
 
@@ -98,8 +99,6 @@ class MinesGame:
             for _row in range(self.HEIGHT):
                 board[column].append(item_to_fill)
         return board
-
-
 
     def print_board(self, game=True, board=None):
         symbols_map = {
@@ -112,7 +111,7 @@ class MinesGame:
             "5": "𝟧",
             "6": "𝟨",
             "7": "𝟩",
-            "8": "𝟪"
+            "8": "𝟪",
         }
         if board is None:
             board = self.game_board
@@ -128,7 +127,6 @@ class MinesGame:
 
         print(table)
 
-
     def create_board(self):
         # FIXME: use the create_and_fill_board function
         self.board = []
@@ -142,18 +140,16 @@ class MinesGame:
                 # -2 is equal to not seen
                 self.game_board[column].append(-2)
 
-
         # Put in all +1 the ones that touch the mines
         for mine_location in self.mines_location:
             # Transform from the numbers to column and row
             # -1 is becuase it's not 0 indexed
             mine_location = {
                 "row": math.floor(mine_location / self.WIDTH),
-                "column": (mine_location % self.HEIGHT)
+                "column": (mine_location % self.HEIGHT),
             }
             row_index = mine_location["row"]
             column_index = mine_location["column"]
-
 
             # +1 To fields next to it
             # TOP
@@ -170,8 +166,7 @@ class MinesGame:
                 if column_index > 0:
                     self.board[row_index - 1][column_index - 1] += 1
 
-            # MIDDLE 
-
+            # MIDDLE
 
             if column_index > 0:
                 self.board[row_index][column_index - 1] += 1
@@ -198,7 +193,7 @@ class MinesGame:
         for mine_location in self.mines_location:
             mine_location = {
                 "row": math.floor(mine_location / self.WIDTH),
-                "column": (mine_location % self.HEIGHT)
+                "column": (mine_location % self.HEIGHT),
             }
             self.board[mine_location["row"]][mine_location["column"]] = -1
 
@@ -211,7 +206,6 @@ class MinesGame:
 
         self.locations_free = (self.HEIGHT * self.WIDTH) - zeros - self.MINES_AMOUNT
 
-
     def get_zeros_in_board(self):
         zeros_in_board = 0
         for row in self.board:
@@ -219,8 +213,6 @@ class MinesGame:
                 if square == 0:
                     zeros_in_board += 1
         return zeros_in_board
-
-
 
     def ask_for_input(self) -> bool:
         row = int(input("ROW: ")) - 1
@@ -232,8 +224,6 @@ class MinesGame:
         else:
             finished = False
 
-
-
         print(f"FINISHED: {finished}")
         print(f"GUESSED: {self.board[row][column]}")
         if flag == "True":
@@ -243,7 +233,6 @@ class MinesGame:
             self.game_board[row][column] = self.board[row][column]
         self.print_board()
         return finished
-
 
     def get_mines_location(self) -> list:
         ocupied_numbers = {}
@@ -257,6 +246,3 @@ class MinesGame:
         # I sorted them so I can find them easier when I create the board
         sorted_numbers = sorted(random_numbers)
         return sorted_numbers
-
-
-

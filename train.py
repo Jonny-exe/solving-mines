@@ -4,10 +4,11 @@ import argparse
 import torch
 import torch.nn as nn
 
-# Loss and optimizier 
+# Loss and optimizier
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
 from create_data import initial_population
+
 
 class DatasetValue(Dataset):
     def __init__(self, data):
@@ -64,8 +65,8 @@ def train(dataset=[]):
             # running_loss += loss.time()
 
             # if i % 2000 == 1999:
-                # print('[%d, %5d] loss: %.3f' %
-                      # (epoch + 1, i + 1, running_loss / 2000))
+            # print('[%d, %5d] loss: %.3f' %
+            # (epoch + 1, i + 1, running_loss / 2000))
             running_loss = 0.0
     torch.save(model.state_dict(), "models/value.pth")
     print("Finished training")
@@ -77,12 +78,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     device = "cuda"
 
-
-
     if args.data is not None:
         data = np.load(args.data, allow_pickle=True)
         train(data)
     else:
         train()
-
-

@@ -2,7 +2,7 @@ import argparse
 import numpy as np
 from machine import WIDTH, train_model
 
-parser = argparse.ArgumentParser(description='Main file')
+parser = argparse.ArgumentParser(description="Main file")
 parser.add_argument("--data", type=str)
 parser.add_argument("--model")
 
@@ -19,7 +19,3 @@ elif args.data is not None:
     training_data = training_data.tolist()
     print(training_data)
     model = train_model(training_data)
-
-
-
-
