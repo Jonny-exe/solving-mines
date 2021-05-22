@@ -5,7 +5,7 @@ from copy import deepcopy
 from statistics import mean, median
 from bot import Bot
 
-INITIAL_GAMES = 10000
+INITIAL_GAMES = 700
 SCORE_REQUIREMENTS = 35
 HEIGHT = 8
 WIDTH = 8
@@ -24,14 +24,13 @@ def initial_population():
             print(f"{data_count + 1} / {INITIAL_GAMES}")
 
         game = MinesGame(WIDTH, HEIGHT)
-        # game.render_games()
         bot = Bot(game)
         score = 0
         game_memory = []
         prev_observation = deepcopy(game.game_board)
         for _ in range(GOAL_STEPS):
-            action = np.argmax(bot.look_for_empty())
-            observation, done, reward, won = game.enter_input(action)
+            action = bot.look_for_empty()
+            observation, done, reward, won = game.enter_input(action, True)
 
             if done and not won:
                 break

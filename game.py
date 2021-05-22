@@ -35,8 +35,9 @@ class MinesGame:
     def render_games(self):
         self.render = True
 
-    def enter_input(self, mine_location) -> Tuple[list, bool, int]:
-        # mine_location = np.argmax(mine_location)
+    def enter_input(self, mine_location, is_array=False) -> Tuple[list, bool, int]:
+        if is_array:
+            mine_location = np.argmax(mine_location)
         row = math.floor(mine_location / self.WIDTH)
         column = mine_location % self.HEIGHT
         over = False
